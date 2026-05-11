@@ -7,7 +7,6 @@ jobs:
   build-win-x64:
     runs-on: windows-latest
     env:
-      NODE_ENV: production
       DATABASE_URL: file:./prisma/dev.db
       NEXT_PUBLIC_DOMAIN_API_FULL: http://localhost:3000/
       NEXT_PUBLIC_API_PASS_AES: wdypm0808
