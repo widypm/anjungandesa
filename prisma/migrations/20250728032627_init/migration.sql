@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE `Role` ADD COLUMN `createBy` VARCHAR(191) NULL,
+    ADD COLUMN `deletedAt` DATETIME(3) NULL,
+    ADD COLUMN `isActive` BOOLEAN NOT NULL DEFAULT true,
+    ADD COLUMN `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    ADD COLUMN `updateBy` VARCHAR(191) NULL;

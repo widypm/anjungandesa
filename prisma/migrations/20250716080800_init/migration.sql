@@ -1,0 +1,11 @@
+-- AlterTable
+ALTER TABLE `Lang` ADD COLUMN `createBy` VARCHAR(191) NULL,
+    ADD COLUMN `updateBy` VARCHAR(191) NULL;
+
+-- AlterTable
+ALTER TABLE `Menu` ADD COLUMN `createBy` VARCHAR(191) NULL,
+    ADD COLUMN `updateBy` VARCHAR(191) NULL;
+
+-- AlterTable
+ALTER TABLE `User` ADD COLUMN `createBy` VARCHAR(191) NULL,
+    ADD COLUMN `updateBy` VARCHAR(191) NULL;

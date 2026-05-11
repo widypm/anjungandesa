@@ -1,0 +1,115 @@
+{
+  "name": "devsolusi-landing-nextjs",
+  "version": "1.0.0",
+  "private": true,
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "db:init": "sqlite3 prisma/dev.db < prisma/init.sql",
+    "db:generate": "prisma generate",
+    "start": "NODE_ENV=production node server.js",
+    "desktop:dev": "node electron/cli.cjs dev",
+    "desktop:start": "node electron/cli.cjs start",
+    "electron:install-deps": "electron-builder install-app-deps",
+    "dist:win": "npm run electron:install-deps && npm run build && electron-builder --win nsis --x64",
+    "dist:win:x64": "npm run build && electron-builder --win nsis --x64"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/modifiers": "^9.0.0",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@flmngr/flmngr-react": "^2.0.4",
+    "@microlink/react-json-view": "^1.27.0",
+    "@prisma/client": "^6.11.1",
+    "@reduxjs/toolkit": "^2.8.2",
+    "@tinymce/tinymce-react": "^6.2.1",
+    "autoprefixer": "^10.4.14",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
+    "chart.js": "^4.5.0",
+    "chartjs-plugin-datalabels": "^2.2.0",
+    "crypto-js": "^4.2.0",
+    "csv-parse": "^6.1.0",
+    "exceljs": "^4.4.0",
+    "framer-motion": "^12.23.12",
+    "jose": "^6.0.12",
+    "next": "^14.2.30",
+    "node-cache": "^5.1.2",
+    "pdf-lib": "^1.17.1",
+    "postcss": "^8.4.21",
+    "qrcode": "^1.5.4",
+    "react": "18.2.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-country-flag": "^3.1.0",
+    "react-dom": "18.2.0",
+    "react-google-recaptcha": "^3.1.0",
+    "react-icons": "^5.5.0",
+    "react-redux": "^9.2.0",
+    "react-select": "^5.10.2",
+    "react-toastify": "^11.0.5",
+    "react-webcam": "^7.2.0",
+    "recharts": "^3.7.0",
+    "redux-persist": "^6.0.0",
+    "tailwindcss": "^3.3.2",
+    "tesseract.js": "^7.0.0",
+    "tesseract.js-core": "^7.0.0",
+    "v": "^0.3.0",
+    "xlsx": "^0.18.5",
+    "zod": "^4.0.17"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.12",
+    "@types/react": "19.1.8",
+    "@types/react-chartjs-2": "^2.0.2",
+    "@types/xlsx": "^0.0.35",
+    "electron": "^40.8.0",
+    "electron-builder": "^26.8.1",
+    "playwright": "^1.52.0",
+    "prisma": "^6.11.1",
+    "typescript": "5.8.3"
+  },
+  "build": {
+    "appId": "com.widy.anjungandesa",
+    "productName": "Anjungan Desa",
+    "asar": false,
+    "npmRebuild": true,
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "build/icons/**/*",
+      "electron/**/*",
+      ".next/**/*",
+      "public/**/*",
+      "prisma/**/*",
+      "uploads/**/*",
+      "next.config.js",
+      "package.json",
+      "server.js"
+    ],
+    "extraMetadata": {
+      "main": "electron/main.cjs"
+    },
+    "win": {
+      "icon": "build/icons/icon.ico",
+      "artifactName": "Anjungan-Desa-Setup-${version}-${arch}.${ext}",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "installerIcon": "build/icons/icon.ico",
+      "uninstallerIcon": "build/icons/icon.ico",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false
+    }
+  }
+}

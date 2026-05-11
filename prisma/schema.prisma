@@ -1,0 +1,1283 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id              String            @id @default(cuid())
+  name            String
+  address         String?
+  phone           String?
+  email           String?
+  users           User[]
+  accounts        Account[]
+  journals        JournalEntry[]
+  isActive        Boolean           @default(true)
+  isDeleted       Boolean           @default(false)
+  deletedAt       DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime?
+  createBy        String?
+  updateBy        String?
+  role            Role[]
+  rolePermisions  RolePermision[]
+  auditlog        auditlog[]
+  lang            Lang[]
+  menu            Menu[]
+  menuType        MenuType[]
+  menuTranslation MenuTranslation[]
+  mediaPage       MediaPage[]
+  page            Page[]
+  pageCategory    PageCategory[]
+  pageTranslation PageTranslation[]
+  wordingPage     WordingPage[]
+  wordingGeneral  WordingGeneral[]
+  settingApp      SettingApp[]
+  category        Category[]
+  template        Template[]
+  section         Section[]
+  media           Media[]
+  customer        Customer[]
+  vendor          Vendor[]
+  invoice         Invoice[]
+  payment         Payment[]
+  accountBalances AccountBalance[]
+  typeTransaction TypeTransaction[]
+  businessPartner BusinessPartner[]
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  password   String
+  name       String
+  companyId  String?
+  company    Company?  @relation(fields: [companyId], references: [id])
+  roleId     Int
+  role       Role      @relation(fields: [roleId], references: [id])
+  token      String? // opsional, bisa untuk menyimpan token
+  tokenAt    DateTime? @default(now())
+  updateAt   DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  isActive   Boolean   @default(true)
+  isDeleted  Boolean   @default(false)
+  isLogin    Boolean   @default(false)
+  loginDate  DateTime?
+  logOutDate DateTime?
+  deletedAt  DateTime?
+  createBy   String?
+  updateBy   String?
+  lang       Lang?     @relation(fields: [langCode], references: [code])
+  langCode   String?
+}
+
+model Role {
+  id         Int             @id @default(autoincrement())
+  name       String          @unique
+  companyId  String?
+  company    Company?        @relation(fields: [companyId], references: [id])
+  users      User[]
+  permisions RolePermision[]
+  isActive   Boolean         @default(true)
+  isDeleted  Boolean         @default(false)
+  deletedAt  DateTime?
+  updateAt   DateTime        @default(now())
+  createdAt  DateTime        @default(now())
+  createBy   String?
+  updateBy   String?
+}
+
+model RolePermision {
+  id        Int       @id @default(autoincrement())
+  companyId String?
+  company   Company?  @relation(fields: [companyId], references: [id])
+  roleId    Int
+  role      Role      @relation(fields: [roleId], references: [id])
+  menuId    Int
+  menu      Menu      @relation(fields: [menuId], references: [id])
+  view      Boolean   @default(false)
+  create    Boolean   @default(true)
+  update    Boolean   @default(false)
+  deleted   Boolean   @default(false)
+  isActive  Boolean   @default(true)
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  updateAt  DateTime  @default(now())
+  createdAt DateTime  @default(now())
+  createBy  String?
+  updateBy  String?
+}
+
+model auditlog {
+  id        Int      @id @default(autoincrement())
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+  userId    Int
+  user      String
+  ip        String
+  urlApi    String
+  urlFe     String
+  methodApi String
+  bodyApi   String
+  menuId    Int
+  menuLabel String
+  pageId    Int
+  PageLabel String
+  createBy  String
+  updateBy  String
+  updateAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model Lang {
+  code             String            @id
+  name             String
+  companyId        String?
+  company          Company?          @relation(fields: [companyId], references: [id])
+  isActive         Boolean           @default(true)
+  isDeleted        Boolean           @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  createBy         String?
+  updateBy         String?
+  menuTranslations MenuTranslation[]
+  pageTranslations PageTranslation[]
+  sections         Section[]
+  pageCategory     PageCategory[]
+  wording          WordingPage[]
+  user             User[]
+}
+
+model Media {
+  id        Int       @id @default(autoincrement())
+  companyId String?
+  company   Company?  @relation(fields: [companyId], references: [id])
+  menuId    Int
+  type      String
+  langCode  String
+  url       String // URL bisa beda per bahasa
+  alt       String?
+  title     String?
+  menu      Menu      @relation(fields: [menuId], references: [id])
+  isActive  Boolean   @default(true)
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createBy  String?
+  updateBy  String?
+
+  @@unique([menuId, type, langCode])
+}
+
+model Menu {
+  id             Int               @id @default(autoincrement())
+  companyId      String?
+  company        Company?          @relation(fields: [companyId], references: [id])
+  parentId       Int?
+  parent         Menu?             @relation("MenuToSub", fields: [parentId], references: [id])
+  children       Menu[]            @relation("MenuToSub")
+  order          Int               @default(0)
+  isActive       Boolean           @default(true)
+  sort           Int               @default(0)
+  publishAt      DateTime?         @default(now())
+  unPublishAt    DateTime?
+  medias         Media[]
+  typeMenuId     Int?
+  typeMenu       MenuType?         @relation(fields: [typeMenuId], references: [id])
+  isDeleted      Boolean           @default(false)
+  deletedAt      DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime?
+  createBy       String?
+  updateBy       String?
+  translations   MenuTranslation[]
+  rolePermisions RolePermision[]
+}
+
+model MenuType {
+  id        Int       @id @default(autoincrement())
+  companyId String?
+  company   Company?  @relation(fields: [companyId], references: [id])
+  name      String
+  slug      String?
+  menus     Menu[]
+  isActive  Boolean   @default(true)
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  updateAt  DateTime  @default(now())
+  createdAt DateTime  @default(now())
+  createBy  String?
+  updateBy  String?
+}
+
+model MenuTranslation {
+  id          Int       @id @default(autoincrement())
+  companyId   String?
+  company     Company?  @relation(fields: [companyId], references: [id])
+  menuId      Int
+  langCode    String
+  title       String
+  subTitle    String?
+  linkType    LinkType? @default(URL)
+  slug        String?
+  pageId      Int?
+  categoryId  Int?
+  description String?
+  overview    String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  page        Page?     @relation(fields: [pageId], references: [id])
+  menu        Menu      @relation(fields: [menuId], references: [id])
+  lang        Lang      @relation(fields: [langCode], references: [code])
+  isActive    Boolean   @default(true)
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime?
+  createBy    String?
+  updateBy    String?
+
+  @@unique([menuId, langCode])
+}
+
+enum PageType {
+  POST
+  PAGE
+}
+
+enum LinkType {
+  URL
+  PAGE
+  CATEGORY
+}
+
+model MediaPage {
+  id         Int       @id @default(autoincrement())
+  companyId  String?
+  company    Company?  @relation(fields: [companyId], references: [id])
+  pageId     Int?
+  categoryId Int?
+  type       String
+  langCode   String
+  url        String // URL bisa beda per bahasa
+  alt        String?
+  title      String?
+  menu       Page?     @relation(fields: [pageId], references: [id])
+  category   Category? @relation(fields: [categoryId], references: [id])
+  isActive   Boolean   @default(true)
+  isDeleted  Boolean   @default(false)
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createBy   String?
+  updateBy   String?
+
+  @@unique([pageId, type, langCode])
+}
+
+model Page {
+  id               Int               @id @default(autoincrement())
+  companyId        String?
+  company          Company?          @relation(fields: [companyId], references: [id])
+  pageType         PageType          @default(PAGE)
+  order            Int               @default(0)
+  sort             Int               @default(0)
+  publishAt        DateTime?         @default(now())
+  unPublishAt      DateTime?
+  mediaPages       MediaPage[]
+  isActive         Boolean           @default(true)
+  isDeleted        Boolean           @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime?
+  createBy         String?
+  updateBy         String?
+  translations     PageTranslation[]
+  menuTranslations MenuTranslation[]
+  sectionsAsMain   Section[]         @relation("PageAsMain")
+  sectionsAsData   Section[]         @relation("PageAsData")
+  pageCategories   PageCategory[]
+  wording          WordingPage[]
+}
+
+model PageCategory {
+  id         Int       @id @default(autoincrement())
+  companyId  String?
+  company    Company?  @relation(fields: [companyId], references: [id])
+  pageId     Int
+  page       Page?     @relation(fields: [pageId], references: [id])
+  categoryId Int?
+  categories Category? @relation(fields: [categoryId], references: [id])
+  langCode   String?
+  lang       Lang?     @relation(fields: [langCode], references: [code])
+}
+
+model PageTranslation {
+  id              Int       @id @default(autoincrement())
+  companyId       String?
+  company         Company?  @relation(fields: [companyId], references: [id])
+  pageId          Int?
+  categoryId      Int?
+  view            Int       @default(0)
+  langCode        String
+  title           String
+  subTitle        String?
+  slug            String?
+  description     String?
+  overview        String?
+  metaTitle       String? // Title untuk tag <title>
+  metaDescription String? // Untuk tag <meta name="description">
+  metaKeywords    String? // Untuk tag <meta name="keywords"> (meskipun jarang digunakan)
+  ogTitle         String? // Untuk tag <meta property="og:title">
+  ogDescription   String? // Untuk tag <meta property="og:description">
+  ogImage         String? // Untuk tag <meta property="og:image">
+  ogType          String? // Untuk tag <meta property="og:type">
+  canonicalUrl    String? // Untuk tag <link rel="canonical">
+  page            Page?     @relation(fields: [pageId], references: [id])
+  category        Category? @relation(fields: [categoryId], references: [id])
+  lang            Lang      @relation(fields: [langCode], references: [code])
+  isActive        Boolean   @default(true)
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime?
+  createBy        String?
+  updateBy        String?
+
+  @@unique([pageId, langCode])
+}
+
+model WordingPage {
+  companyId        String?
+  company          Company?        @relation(fields: [companyId], references: [id])
+  id               Int             @id @default(autoincrement())
+  wordingGeneralId Int?
+  wordingGeneral   WordingGeneral? @relation(fields: [wordingGeneralId], references: [id])
+  key              String
+  label            String
+  langCode         String
+  lang             Lang            @relation(fields: [langCode], references: [code])
+  page             Page?           @relation(fields: [pageId], references: [id])
+  pageId           Int?
+  isActive         Boolean         @default(true)
+  isDeleted        Boolean         @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime?
+  createBy         String?
+  updateBy         String?
+}
+
+model WordingGeneral {
+  companyId   String?
+  company     Company?      @relation(fields: [companyId], references: [id])
+  id          Int           @id @default(autoincrement())
+  key         String
+  isActive    Boolean       @default(true)
+  isDeleted   Boolean       @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime?
+  createBy    String?
+  updateBy    String?
+  WordingPage WordingPage[]
+}
+
+model SettingApp {
+  id        Int       @id @default(autoincrement())
+  companyId String?
+  company   Company?  @relation(fields: [companyId], references: [id])
+  key       String
+  value     String?
+  isActive  Boolean   @default(true)
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  createBy  String?
+  updateBy  String?
+}
+
+model Category {
+  id               Int               @id @default(autoincrement())
+  companyId        String?
+  company          Company?          @relation(fields: [companyId], references: [id])
+  pageTranslations PageTranslation[]
+  medias           MediaPage[]
+  sections         Section[]
+  isActive         Boolean           @default(true)
+  isDeleted        Boolean           @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime?
+  createBy         String?
+  updateBy         String?
+  menuTranslations MenuTranslation[]
+  pageCategories   PageCategory[]
+}
+
+model Template {
+  id        Int       @id @default(autoincrement())
+  companyId String?
+  company   Company?  @relation(fields: [companyId], references: [id])
+  name      String
+  code      String
+  sections  Section[]
+  isActive  Boolean   @default(true)
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  createBy  String?
+  updateBy  String?
+}
+
+enum SectionType {
+  CONTENT
+  CATEGORY
+  PAGE
+}
+
+model Section {
+  id          Int         @id @default(autoincrement())
+  companyId   String?
+  company     Company?    @relation(fields: [companyId], references: [id])
+  type        SectionType
+  order       Int         @default(0)
+  pageId      Int
+  page        Page        @relation("PageAsMain", fields: [pageId], references: [id])
+  pageIdData  Int?
+  pageData    Page?       @relation("PageAsData", fields: [pageIdData], references: [id])
+  categoryId  Int?
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  templateId  Int
+  template    Template    @relation(fields: [templateId], references: [id])
+  langCode    String
+  lang        Lang        @relation(fields: [langCode], references: [code])
+  title       String?
+  subTitle    String?
+  image       String?
+  secondImage String?
+  slug        String?
+  description String?
+  overview    String?
+  isActive    Boolean     @default(true)
+  isDeleted   Boolean     @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime?
+  createBy    String?
+  updateBy    String?
+}
+
+enum CashFlowCategory {
+  OPERATING
+  INVESTING
+  FINANCING
+}
+
+model Account {
+  id               String            @id @default(cuid())
+  companyId        String
+  company          Company           @relation(fields: [companyId], references: [id])
+  code             String // contoh: 1001, 2001, dsb.
+  name             String
+  type             AccountType
+  cashFlowCategory CashFlowCategory?
+  parentId         String? // untuk nested akun (misal Kas → Kas Kecil, Kas Besar)
+  parent           Account?          @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children         Account[]         @relation("AccountHierarchy")
+  journalLines     JournalLine[]
+  payment          Payment[]
+  accountBalances  AccountBalance[]
+  debitTypes       TypeTransaction[] @relation("DebitAccount")
+  creditTypes      TypeTransaction[] @relation("CreditAccount")
+  isActive         Boolean           @default(true)
+  isDeleted        Boolean           @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime?
+  createBy         String?
+  updateBy         String?
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum StatusJournal {
+  DRAFT
+  POSTED
+}
+
+model JournalEntry {
+  id                String           @id @default(cuid())
+  companyId         String
+  company           Company          @relation(fields: [companyId], references: [id])
+  businessPartnerId String?
+  businessPartners  BusinessPartner? @relation(fields: [businessPartnerId], references: [id])
+  date              DateTime
+  description       String
+  reference         String? // no. transaksi, invoice, dll
+  lines             JournalLine[]
+  source            SourceJournal
+  statusJournal     StatusJournal?   @default(DRAFT)
+  isActive          Boolean          @default(true)
+  isDeleted         Boolean          @default(false)
+  deletedAt         DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime?
+  createBy          String?
+  updateBy          String?
+  invoice           Invoice[]
+  typeTransactionId String?
+  typeTransaction   TypeTransaction? @relation(fields: [typeTransactionId], references: [id])
+}
+
+enum SourceJournal {
+  JOURNALENTRY
+  TRANSACTIONENTRY
+  PAYMENT
+  INVOICE
+}
+
+model JournalLine {
+  id          String       @id @default(cuid())
+  journalId   String
+  description String?
+  journal     JournalEntry @relation(fields: [journalId], references: [id])
+  accountId   String
+  account     Account      @relation(fields: [accountId], references: [id])
+  debit       Decimal      @default(0.0)
+  credit      Decimal      @default(0.0)
+  isActive    Boolean      @default(true)
+  isDeleted   Boolean      @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime?
+  createBy    String?
+  updateBy    String?
+}
+
+model Customer {
+  id        String    @id @default(cuid())
+  companyId String
+  company   Company   @relation(fields: [companyId], references: [id])
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  invoices  Invoice[]
+  isActive  Boolean   @default(true)
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  createBy  String?
+  updateBy  String?
+}
+
+model Vendor {
+  id        String    @id @default(cuid())
+  companyId String
+  company   Company   @relation(fields: [companyId], references: [id])
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  invoices  Invoice[]
+  isActive  Boolean   @default(true)
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  createBy  String?
+  updateBy  String?
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  PARTIALLY_PAID
+  CANCELLED
+}
+
+model Payment {
+  id        String    @id @default(cuid())
+  companyId String
+  company   Company   @relation(fields: [companyId], references: [id])
+  invoiceId String?
+  invoice   Invoice?  @relation(fields: [invoiceId], references: [id])
+  date      DateTime
+  amount    Decimal
+  accountId String // link ke COA (Kas, Bank, dll)
+  account   Account   @relation(fields: [accountId], references: [id])
+  reference String?
+  isActive  Boolean   @default(true)
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  createBy  String?
+  updateBy  String?
+}
+
+model Invoice {
+  id         String        @id @default(cuid())
+  companyId  String
+  company    Company       @relation(fields: [companyId], references: [id])
+  customerId String?
+  customer   Customer?     @relation(fields: [customerId], references: [id])
+  vendorId   String?
+  vendor     Vendor?       @relation(fields: [vendorId], references: [id])
+  number     String        @unique
+  date       DateTime
+  dueDate    DateTime?
+  status     InvoiceStatus @default(DRAFT)
+  total      Decimal       @default(0.0)
+  payments   Payment[]
+  journalId  String?
+  journal    JournalEntry? @relation(fields: [journalId], references: [id])
+  isActive   Boolean       @default(true)
+  isDeleted  Boolean       @default(false)
+  deletedAt  DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime?
+  createBy   String?
+  updateBy   String?
+}
+
+model AccountBalance {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id])
+
+  period    DateTime // bisa bulanan
+  debit     Decimal   @default(0.0)
+  credit    Decimal   @default(0.0)
+  balance   Decimal   @default(0.0)
+  isActive  Boolean   @default(true)
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  createBy  String?
+  updateBy  String?
+}
+
+model TypeTransaction {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  name           String
+  journalEntry   JournalEntry[]
+  debitAccountId String
+  debitAccount   Account        @relation("DebitAccount", fields: [debitAccountId], references: [id])
+
+  creditAccountId String
+  creditAccount   Account @relation("CreditAccount", fields: [creditAccountId], references: [id])
+
+  isActive  Boolean   @default(true)
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  createBy  String?
+  updateBy  String?
+}
+
+model BusinessPartner {
+  id        String      @id @default(cuid())
+  companyId String
+  company   Company     @relation(fields: [companyId], references: [id])
+  name      String
+  type      PartnerType // CUSTOMER, SUPPLIER, BOTH
+  email     String?
+  phone     String?
+  address   String?
+
+  taxId    String? // NPWP misalnya
+  isActive Boolean @default(true)
+
+  // Relasi ke transaksi/jurnal
+  journalEntry JournalEntry[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum PartnerType {
+  CUSTOMER
+  SUPPLIER
+  BOTH
+}
+
+model ProgramPaket {
+  id          Int            @id @default(autoincrement())
+  kode        String         @unique
+  nama        String
+  target      String?
+  satuan      String?
+  lokasi      String?
+  jenisPaket  String?
+  metode      String?
+  sumberDana  String?
+  parentId    Int?
+  parent      ProgramPaket?  @relation("ProgramHierarchy", fields: [parentId], references: [id])
+  children    ProgramPaket[] @relation("ProgramHierarchy")
+  pagu        Decimal        @default(0)
+  realisasi   Decimal        @default(0)
+  blokir      Decimal        @default(0)
+  keu         Decimal        @default(0)
+  fisik       Decimal        @default(0)
+  thang       Int            @default(2025)
+  paket       Paket[]
+  paketRkakl  PaketRkakl[]
+  unitKerjaId Int?
+  unitKerja   UnitKerja?     @relation(fields: [unitKerjaId], references: [id])
+}
+
+model Paket {
+  id               Int          @id @default(autoincrement())
+  thang            Int          @default(2025)
+  programPaketKode String // FK ke ProgramPaket.kode
+  programPaket     ProgramPaket @relation(fields: [programPaketKode], references: [kode])
+  kdunit           String?
+  kdsatker         String?
+  kdprogram        String?
+  kdgiat           String?
+  kdoutput         String?
+  kdsoutput        String?
+  kdkmpnen         String?
+  kdskmpnen        String?
+  nmpaket          String?
+  kdlokasi         String?
+  kdkabkota        String?
+  metode           String?
+  kdpengadaan      String?
+
+  vol         Int?
+  sat         String?
+  tgl_mulai   DateTime?
+  tgl_selesai DateTime?
+
+  // Pagu
+  pagu_51    Decimal @default(0)
+  pagu_52    Decimal @default(0)
+  pagu_53    Decimal @default(0)
+  pagu_rpm   Decimal @default(0)
+  pagu_sbsn  Decimal @default(0)
+  pagu_phln  Decimal @default(0)
+  pagu_total Decimal @default(0)
+
+  // Realisasi
+  real_51    Decimal @default(0)
+  real_52    Decimal @default(0)
+  real_53    Decimal @default(0)
+  real_rpm   Decimal @default(0)
+  real_sbsn  Decimal @default(0)
+  real_phln  Decimal @default(0)
+  real_total Decimal @default(0)
+
+  // Progres total
+  progres_keuangan Decimal @default(0)
+  progres_fisik    Decimal @default(0)
+
+  // Progres keuangan bulanan
+  progres_keu_jan Decimal @default(0)
+  progres_keu_feb Decimal @default(0)
+  progres_keu_mar Decimal @default(0)
+  progres_keu_apr Decimal @default(0)
+  progres_keu_mei Decimal @default(0)
+  progres_keu_jun Decimal @default(0)
+  progres_keu_jul Decimal @default(0)
+  progres_keu_agu Decimal @default(0)
+  progres_keu_sep Decimal @default(0)
+  progres_keu_okt Decimal @default(0)
+  progres_keu_nov Decimal @default(0)
+  progres_keu_des Decimal @default(0)
+
+  // Progres fisik bulanan
+  progres_fisik_jan Decimal @default(0)
+  progres_fisik_feb Decimal @default(0)
+  progres_fisik_mar Decimal @default(0)
+  progres_fisik_apr Decimal @default(0)
+  progres_fisik_mei Decimal @default(0)
+  progres_fisik_jun Decimal @default(0)
+  progres_fisik_jul Decimal @default(0)
+  progres_fisik_agu Decimal @default(0)
+  progres_fisik_sep Decimal @default(0)
+  progres_fisik_okt Decimal @default(0)
+  progres_fisik_nov Decimal @default(0)
+  progres_fisik_des Decimal @default(0)
+
+  // Rencana keuangan bulanan
+  ren_keu_jan Decimal @default(0)
+  ren_keu_feb Decimal @default(0)
+  ren_keu_mar Decimal @default(0)
+  ren_keu_apr Decimal @default(0)
+  ren_keu_mei Decimal @default(0)
+  ren_keu_jun Decimal @default(0)
+  ren_keu_jul Decimal @default(0)
+  ren_keu_agu Decimal @default(0)
+  ren_keu_sep Decimal @default(0)
+  ren_keu_okt Decimal @default(0)
+  ren_keu_nov Decimal @default(0)
+  ren_keu_des Decimal @default(0)
+
+  // Rencana fisik bulanan
+  ren_fis_jan Decimal @default(0)
+  ren_fis_feb Decimal @default(0)
+  ren_fis_mar Decimal @default(0)
+  ren_fis_apr Decimal @default(0)
+  ren_fis_mei Decimal @default(0)
+  ren_fis_jun Decimal @default(0)
+  ren_fis_jul Decimal @default(0)
+  ren_fis_agu Decimal @default(0)
+  ren_fis_sep Decimal @default(0)
+  ren_fis_okt Decimal @default(0)
+  ren_fis_nov Decimal @default(0)
+  ren_fis_des Decimal @default(0)
+}
+
+model PaketRkakl {
+  id               Int          @id @default(autoincrement())
+  programPaketKode String // FK ke ProgramPaket.kode
+  programPaket     ProgramPaket @relation(fields: [programPaketKode], references: [kode])
+  thang            Int          @default(0)
+  kdjendok         String
+  kdsatker         String
+  kddept           String
+  kdunit           String
+  kdprogram        String
+  kdgiat           String
+  kdoutput         String
+  kdlokasi         String
+  kdkabkota        String
+  kddekon          String
+  kdsoutput        String
+  kdkmpnen         String
+  kdskmpnen        String
+  kdakun           String
+  kdkppn           String
+  kdbeban          String
+  kdjnsban         String
+  kdctarik         String
+  register         String?
+  carahitung       String?
+  header1          String?
+  header2          String?
+  kdheader         String?
+  noitem           String?
+  nmitem           String
+  vol1             Decimal      @default(0)
+  sat1             String?
+  vol2             Decimal      @default(0)
+  sat2             String?
+  vol3             Decimal      @default(0)
+  sat3             String?
+  vol4             Decimal      @default(0)
+  sat4             String?
+  volkeg           Decimal      @default(0)
+  satkeg           String?
+  hargasat         Decimal      @default(0)
+  jumlah           Decimal      @default(0)
+  jumlah2          Decimal      @default(0)
+  paguphln         Decimal      @default(0)
+  pagurmp          Decimal      @default(0)
+  pagurkp          Decimal      @default(0)
+  kdblokir         String?
+  BLOKIRPHLN       Decimal      @default(0)
+  BLOKIRRMP        Decimal      @default(0)
+  BLOKIRRKP        Decimal      @default(0)
+  RPHBLOKIR        Decimal      @default(0)
+  KDCOPY           String?
+  KDABT            String?
+  KDSBU            String?
+  VOLSBK           Decimal      @default(0)
+  VOLRKAKL         Decimal      @default(0)
+  BLNKONTRAK       Decimal      @default(0)
+  NOKONTRAK        String?
+  TGKONTRAK        DateTime?
+  NILKONTRAK       Decimal      @default(0)
+  JANUARI          Decimal      @default(0)
+  PEBRUARI         Decimal      @default(0)
+  MARET            Decimal      @default(0)
+  APRIL            Decimal      @default(0)
+  MEI              Decimal      @default(0)
+  JUNI             Decimal      @default(0)
+  JULI             Decimal      @default(0)
+  AGUSTUS          Decimal      @default(0)
+  SEPTEMBER        Decimal      @default(0)
+  OKTOBER          Decimal      @default(0)
+  NOPEMBER         Decimal      @default(0)
+  DESEMBER         Decimal      @default(0)
+  JMLTUNDA         Decimal      @default(0)
+  KDLUNCURAN       String?
+  JMLABT           Decimal      @default(0)
+  NOREV            String?
+  KDUBAH           String?
+  KURS             Decimal      @default(0)
+  INDEXKPJM        String?
+  KDIB             String?
+
+  @@map("PaketDetail")
+}
+
+model UnitKerja {
+  id           Int            @id @default(autoincrement())
+  kode         String         @unique
+  name         String
+  stafName     String
+  programPaket ProgramPaket[]
+}
+
+// ==========================================
+// MASTER WILAYAH
+// ==========================================
+model Provinsi {
+  id   String @id
+  nama String
+  kota Kota[]
+
+  // Relasi balik ke KLG
+  klgKtp      Klg[] @relation("KtpProvinsi")
+  klgDomisili Klg[] @relation("DomisiliProvinsi")
+
+  @@map("provinsi")
+}
+
+model Kota {
+  id         String      @id
+  nama       String
+  provinsiId String
+  provinsi   Provinsi    @relation(fields: [provinsiId], references: [id])
+  kecamatan  Kecamatan[]
+
+  // Relasi balik ke KLG
+  klgKtp      Klg[] @relation("KtpKota")
+  klgDomisili Klg[] @relation("DomisiliKota")
+
+  @@map("kota")
+}
+
+model Kecamatan {
+  id        String      @id
+  nama      String
+  kotaId    String
+  kota      Kota        @relation(fields: [kotaId], references: [id])
+  kelurahan Kelurahan[]
+
+  // Relasi balik ke KLG
+  klgKtp      Klg[] @relation("KtpKecamatan")
+  klgDomisili Klg[] @relation("DomisiliKecamatan")
+
+  @@map("kecamatan")
+}
+
+model Kelurahan {
+  id          String    @id
+  nama        String
+  kecamatanId String
+  kecamatan   Kecamatan @relation(fields: [kecamatanId], references: [id])
+
+  // Relasi balik ke KLG
+  wargaKtp      Klg[] @relation("KtpKelurahan")
+  wargaDomisili Klg[] @relation("DomisiliKelurahan")
+
+  @@map("kelurahan")
+}
+
+// ==========================================
+// DATA KLG
+// ==========================================
+model Klg {
+  id           String   @id @default(uuid())
+  nik          String   @unique
+  nama         String
+  jenisKelamin String
+  tempatLahir  String
+  tanggalLahir DateTime
+
+  // Relasi alamat KTP
+  ktpProvId String
+  ktpProv   Provinsi  @relation("KtpProvinsi", fields: [ktpProvId], references: [id])
+  ktpKotaId String
+  ktpKota   Kota      @relation("KtpKota", fields: [ktpKotaId], references: [id])
+  ktpKecId  String
+  ktpKec    Kecamatan @relation("KtpKecamatan", fields: [ktpKecId], references: [id])
+  ktpKelId  String
+  ktpKel    Kelurahan @relation("KtpKelurahan", fields: [ktpKelId], references: [id])
+
+  ktpRt     String?
+  ktpRw     String?
+  ktpAlamat String
+
+  // Relasi alamat domisili
+  domisiliProvId String?
+  domisiliProv   Provinsi?  @relation("DomisiliProvinsi", fields: [domisiliProvId], references: [id])
+  domisiliKotaId String?
+  domisiliKota   Kota?      @relation("DomisiliKota", fields: [domisiliKotaId], references: [id])
+  domisiliKecId  String?
+  domisiliKec    Kecamatan? @relation("DomisiliKecamatan", fields: [domisiliKecId], references: [id])
+  domisiliKelId  String?
+  domisiliKel    Kelurahan? @relation("DomisiliKelurahan", fields: [domisiliKelId], references: [id])
+
+  domisiliRt     String?
+  domisiliRw     String?
+  domisiliAlamat String?
+
+  fotoKtp      String?
+  fotoPasPhoto String?
+  fotoPasKk    String?
+  berkas1      String?
+  berkas2      String?
+  berkas3      String?
+  berkas4      String?
+  berkas5      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relasi status
+  statusId String
+  status   KlgStatus @relation(fields: [statusId], references: [id])
+
+  // Relasi ptoLokasi
+  ptoLokasiId String?
+  lokasiPto   PtoLokasi? @relation(fields: [ptoLokasiId], references: [id])
+
+  //Relasi Pto
+  ptoId String?
+  Pto   Pto?    @relation(fields: [ptoId], references: [id])
+
+  //Relasi kelurahan
+  lokasiKelurahan Int? //1=ktp 2=domisili
+  //KlgKategory
+  kategoryId      String
+  kategory        KlgKategory @relation(fields: [kategoryId], references: [id])
+
+  // Log status perubahan
+  statusLogs KlgStatusLog[]
+
+  reKlgs ReKlg[]
+
+  sandi   String?
+  oldData Int //0 lama 1 baru
+
+  @@map("klg")
+}
+
+model KlgStatus {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  color       String?
+  description String?
+  order       Int?
+  klg         Klg[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relasi dua arah ke log
+  oldStatusLogs KlgStatusLog[] @relation("OldStatus")
+  newStatusLogs KlgStatusLog[] @relation("NewStatus")
+}
+
+model KlgKategory {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  order       Int?
+  fileA       String?
+  fileB       String?
+  fileC       String?
+  fileD       String?
+  logo        String?
+  klg         Klg[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+}
+
+model KlgStatusLog {
+  id          String   @id @default(uuid())
+  klgId       String // 🔹 disesuaikan dengan Klg.id
+  oldStatusId String?
+  newStatusId String
+  changedBy   String?
+  note        String?
+  createdAt   DateTime @default(now())
+
+  klg       Klg        @relation(fields: [klgId], references: [id])
+  oldStatus KlgStatus? @relation("OldStatus", fields: [oldStatusId], references: [id])
+  newStatus KlgStatus  @relation("NewStatus", fields: [newStatusId], references: [id])
+}
+
+model Pto {
+  id        String                 @id @default(uuid())
+  name      String
+  status    Int
+  ptoLokasi PtoLokasi[]
+  klg       Klg[]
+  ptoAssign PtoAssignmentCounter[]
+  reKlgs    ReKlg[]
+}
+
+model PtoAssignmentCounter {
+  id        String   @id @default(uuid())
+  lastPtoId String?
+  updatedAt DateTime @updatedAt
+
+  // relasi opsional ke PTO
+  lastPto Pto? @relation(fields: [lastPtoId], references: [id])
+}
+
+model PtoLokasi {
+  id     String  @id @default(uuid())
+  name   String
+  status Int
+  klg    Klg[]
+  reKlgs ReKlg[]
+  ptoId  String
+  pto    Pto     @relation(fields: [ptoId], references: [id])
+}
+
+enum StatusReKlg {
+  Request
+  Reject
+  Approve
+}
+
+enum TypeReKlg {
+  Hilang
+  Rusak
+  Perpanjang
+}
+
+model ReKlg {
+  id          String     @id @default(uuid())
+  type        TypeReKlg
+  klgId       String
+  klg         Klg        @relation(fields: [klgId], references: [id])
+  // Relasi ptoLokasi
+  ptoLokasiId String?
+  lokasiPto   PtoLokasi? @relation(fields: [ptoLokasiId], references: [id])
+
+  fotoKartuRusak  String?
+  fotoSuratHilang String?
+  berkas1         String?
+  berkas2         String?
+  berkas3         String?
+  berkas4         String?
+  berkas5         String?
+
+  status StatusReKlg
+  ptoId  String
+  pto    Pto         @relation(fields: [ptoId], references: [id])
+
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Surat {
+  id String @id @default(cuid())
+
+  // ================= IDENTITAS =================
+  jenis     String // domisili | ktp | lahir | kematian | usaha | dll
+  nik       String?
+  nama      String?
+  ttl       String?
+  alamat    String?
+  pekerjaan String?
+
+  // ================= TANAH =================
+  letakTanah      String?
+  luas            String?
+  batasUtara      String?
+  batasSelatan    String?
+  batasTimur      String?
+  batasBarat      String?
+  statusTanah     String?
+  penggunaanTanah String?
+
+  // ================= USAHA =================
+  namaUsaha   String?
+  jenisUsaha  String?
+  alamatUsaha String?
+  lamaUsaha   String?
+
+  // ================= KEMATIAN =================
+  htlMeninggal   String?
+  ttlMeninggal   String?
+  sebabMeninggal String?
+
+  // ================= PINDAH =================
+  noKK         String?
+  alamatAsal   String?
+  alamatTujuan String?
+  alasanPindah String?
+  tglPindah    String?
+
+  // ================= LAHIR =================
+  ttlAnak   String?
+  ttlAnakKe String?
+  namaAyah  String?
+  namaIbu   String?
+
+  // ================= BEASISWA / BPJS =================
+  sekolah     String?
+  kelas       String?
+  keperluan   String?
+  diagnosa    String?
+  faskes      String?
+  noBpjs      String?
+  namaSekolah String?
+
+  // ================= HIBAH / JUAL BELI TANAH =================
+  namaPenjual      String?
+  namaPembeli      String?
+  jenisTransaksi   String?
+  nilaiTransaksi   String?
+  namaPihakPertama String?
+  nikPihakPertama  String?
+  namaPihakKedua   String?
+  nikPihakKedua    String?
+  ahliWaris        Json?
+
+  // ================= META =================
+  status    StatusSurat @default(SUBMIT)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([jenis])
+}
+
+enum StatusSurat {
+  DRAFT
+  SUBMIT
+  APPROVED
+  REJECTED
+}

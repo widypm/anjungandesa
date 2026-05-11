@@ -1,0 +1,16 @@
+-- AlterTable
+ALTER TABLE `Media` ADD COLUMN `deletedAt` DATETIME(3) NULL,
+    ADD COLUMN `isDeleted` BOOLEAN NOT NULL DEFAULT false;
+
+-- AlterTable
+ALTER TABLE `Menu` ADD COLUMN `deletedAt` DATETIME(3) NULL;
+
+-- AlterTable
+ALTER TABLE `MenuTranslation` ADD COLUMN `deletedAt` DATETIME(3) NULL,
+    ADD COLUMN `isDeleted` BOOLEAN NOT NULL DEFAULT false;
+
+-- AlterTable
+ALTER TABLE `User` ADD COLUMN `deletedAt` DATETIME(3) NULL,
+    ADD COLUMN `isActive` BOOLEAN NOT NULL DEFAULT true,
+    ADD COLUMN `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    ADD COLUMN `updateAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);

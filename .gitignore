@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# build outputs
+.next/
+dist-electron/
+
+# local env
+.env
+.env.local
+
+# database / runtime files
+prisma/dev.db
+uploads/private/
+
+# archives
+*.zip
+
+# macOS
+.DS_Store
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
