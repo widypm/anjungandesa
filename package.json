@@ -12,8 +12,8 @@
     "desktop:dev": "node electron/cli.cjs dev",
     "desktop:start": "node electron/cli.cjs start",
     "electron:install-deps": "electron-builder install-app-deps",
-    "dist:win": "npm run electron:install-deps && npm run build && electron-builder --win nsis --x64",
-    "dist:win:x64": "npm run build && electron-builder --win nsis --x64"
+    "dist:win": "npm run electron:install-deps && npm run build && electron-builder --win nsis --x64 --publish never",
+    "dist:win:x64": "npm run build && electron-builder --win nsis --x64 --publish never"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
